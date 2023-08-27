@@ -137,7 +137,7 @@ class ModelDet:
 
         # output dir
         output_dir, tmp_output_dir = create_output_dir(identifier)
-
+        self._output_dir = output_dir
         # Run PyMultiNest
         sampler = pymultinest.run(
             func_wrapper,
@@ -347,6 +347,10 @@ class ModelDet:
     @property
     def sources(self):
         return self._sources
+
+    @property
+    def output_dir(self):
+        return self._output_dir
 
 class ModelCombine(ModelDet):
 
