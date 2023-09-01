@@ -137,7 +137,6 @@ class ModelDet:
 
         # output dir
         output_dir, tmp_output_dir = create_output_dir(identifier)
-        self._output_dir = output_dir
         # Run PyMultiNest
         sampler = pymultinest.run(
             func_wrapper,
@@ -157,8 +156,12 @@ class ModelDet:
         self._sampler = sampler
 
         # If we used a temporary output dir then remove the symbolic link
+        self.output_dir = tmp_output_dir
         if tmp_output_dir != output_dir:
             tmp_output_dir.unlink()
+            self.output_dir = output_dir
+
+
 
 
         # analyse : taken from 3ML
