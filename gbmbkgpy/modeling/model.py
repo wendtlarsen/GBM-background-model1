@@ -22,22 +22,21 @@ def check_valid_source_name(source, source_list):
 
 
 def create_output_dir(identifier):
-
     base = get_path_of_external_data_dir()
-    output_dir = (base / "fits" / "mn_out" /
-                  (f"{identifier}_"+datetime.now().strftime("%m-%d_%H-%M")))
-
+    output_dir = (
+        base
+        / "fits"
+        / "mn_out"
+        / (f"{identifier}_" + datetime.now().strftime("%m-%d_%H-%M"))
+    )
 
     # If the output path is to long (MultiNest only supports 100 chars)
     # we will create a symbolic link with a random directory name
     # and remove it when MultiNest finished.
 
     if len(str(output_dir)) > 72:
-
-        tmp_output_dir = (base / "fits" / "mn_out" /
-                          str(random.getrandbits(16)))
+        tmp_output_dir = base / "fits" / "mn_out" / str(random.getrandbits(16))
     else:
-
         tmp_output_dir = output_dir
 
     # Create output dir for multinest if not existing
@@ -46,7 +45,6 @@ def create_output_dir(identifier):
         output_dir.mkdir(parents=True, exist_ok=True)
 
         if tmp_output_dir != output_dir:
-
             tmp_output_dir.symlink_to(output_dir)
 
     return output_dir, tmp_output_dir
@@ -63,11 +61,8 @@ def arg_median(a):
 
 
 class ModelDet:
-
     def __init__(self, data):
-        """
-
-        """
+        """ """
         self._data = data
         self._sources = []
 
@@ -97,7 +92,6 @@ class ModelDet:
         log_prior = 0
 
         for i, (parameter_name, parameter) in enumerate(self.parameter.items()):
-
             prior_value = parameter.prior(trial_values[i])
 
             if prior_value == 0:
@@ -106,7 +100,6 @@ class ModelDet:
                 return -np.inf
 
             else:
-
                 parameter.value = trial_values[i]
 
                 log_prior += np.log(prior_value)
@@ -114,17 +107,18 @@ class ModelDet:
         return log_prior
 
     def minimize_multinest(
-            self,
-            identifier="gbmbkgpy_fit",
-            n_live_points=400,
-            const_efficiency_mode=False,
-            verbose=True,
-            resume=False
+        self,
+        identifier="gbmbkgpy_fit",
+        n_live_points=400,
+        const_efficiency_mode=False,
+        verbose=True,
+        resume=False,
     ):
-        """ Multinest Fit """
-        #assert (
+        """Multinest Fit"""
+
+        # assert (
         #    has_pymultinest
-        #), "You need to have pymultinest installed to use this function"
+        # ), "You need to have pymultinest installed to use this function"
         # We need to wrap the function, because multinest maximizes instead of minimizing
         def func_wrapper(values, ndim, nparams):
             # values is a wrapped C class. Extract from it the values in a python list
@@ -156,24 +150,18 @@ class ModelDet:
         self._sampler = sampler
 
         # If we used a temporary output dir then remove the symbolic link
-        self.output_dir = tmp_output_dir
+        self._output_dir = tmp_output_dir
         if tmp_output_dir != output_dir:
             tmp_output_dir.unlink()
-            self.output_dir = output_dir
-
-
-
+            self._output_dir = output_dir
 
         # analyse : taken from 3ML
         multinest_analyzer = pymultinest.analyse.Analyzer(
             n_params=len(self.parameter),
-            outputfiles_basename=str((tmp_output_dir / "fit_").absolute())
+            outputfiles_basename=str((tmp_output_dir / "fit_").absolute()),
         )
 
-        self._raw_samples =\
-            multinest_analyzer.get_equal_weighted_posterior()[
-                :, :-1
-            ]
+        self._raw_samples = multinest_analyzer.get_equal_weighted_posterior()[:, :-1]
 
         self._samples = collections.OrderedDict()
 
@@ -182,11 +170,8 @@ class ModelDet:
 
             self._samples[parameter_name] = self._raw_samples[:, i]
 
-
         # Get the log. likelihood values from the chain
-        log_like_values = multinest_analyzer.get_equal_weighted_posterior()[
-            :, -1
-        ]
+        log_like_values = multinest_analyzer.get_equal_weighted_posterior()[:, -1]
 
         # now get the log probability
         self._log_probability_values = log_like_values + np.array(
@@ -203,14 +188,10 @@ class ModelDet:
             output_dir = str(output_dir.absolute())
 
         multinest_analyzer = pymultinest.analyse.Analyzer(
-            n_params=len(self.parameter),
-            outputfiles_basename=output_dir
+            n_params=len(self.parameter), outputfiles_basename=output_dir
         )
 
-        self._raw_samples =\
-            multinest_analyzer.get_equal_weighted_posterior()[
-                :, :-1
-            ]
+        self._raw_samples = multinest_analyzer.get_equal_weighted_posterior()[:, :-1]
 
         self._samples = collections.OrderedDict()
 
@@ -220,23 +201,20 @@ class ModelDet:
             self._samples[parameter_name] = self._raw_samples[:, i]
 
         # Get the log. likelihood values from the chain
-        log_like_values = multinest_analyzer.get_equal_weighted_posterior()[
-            :, -1
-        ]
+        log_like_values = multinest_analyzer.get_equal_weighted_posterior()[:, -1]
 
         # now get the log probability
         self._log_probability_values = log_like_values + np.array(
             [self.log_prior(samples) for samples in self._raw_samples]
         )
 
-    def get_model_counts_given_source(self, source_name_list: list,
-                                      bin_mask=None, time_bins=None):
-
+    def get_model_counts_given_source(
+        self, source_name_list: list, bin_mask=None, time_bins=None
+    ):
         if time_bins is None:
             counts = np.zeros_like(self.data.fit_counts, dtype=float)
         else:
-            counts = np.zeros((len(time_bins), self.data.num_echan),
-                              dtype=float)
+            counts = np.zeros((len(time_bins), self.data.num_echan), dtype=float)
 
         for name in source_name_list:
             found = False
@@ -246,9 +224,11 @@ class ModelDet:
                     found = True
                     break
             if not found:
-                raise AssertionError(f"No source with the name {name}"
-                                     "Sources with the following names exist:"
-                                     f"{self.source_names}")
+                raise AssertionError(
+                    f"No source with the name {name}"
+                    "Sources with the following names exist:"
+                    f"{self.source_names}"
+                )
         return counts
 
     def _get_multinest_prior(self):
@@ -257,17 +237,11 @@ class ModelDet:
         """
 
         def prior(params, ndim, nparams):
-
             for i, (parameter_name, parameter) in enumerate(self.parameter.items()):
-
                 try:
-
-                    params[i] = parameter.prior.from_unit_cube(
-                        params[i]
-                    )
+                    params[i] = parameter.prior.from_unit_cube(params[i])
 
                 except AttributeError:
-
                     raise RuntimeError(
                         "The prior you are trying to use for parameter %s is "
                         "not compatible with multinest" % parameter_name
@@ -283,12 +257,10 @@ class ModelDet:
         return prior
 
     def get_model_counts(self, bin_mask=None, time_bins=None):
-
         if time_bins is None:
             counts = np.zeros_like(self.data.fit_counts, dtype=float)
         else:
-            counts = np.zeros((len(time_bins), self.data.num_echan),
-                              dtype=float)
+            counts = np.zeros((len(time_bins), self.data.num_echan), dtype=float)
 
         for source in self._sources:
             counts += source.get_counts(bin_mask, time_bins=time_bins)
@@ -355,8 +327,8 @@ class ModelDet:
     def output_dir(self):
         return self._output_dir
 
-class ModelCombine(ModelDet):
 
+class ModelCombine(ModelDet):
     def __init__(self, *model_dets):
         self._model_dets: ModelDet = model_dets
         self._sampler = None
@@ -376,15 +348,13 @@ class ModelCombine(ModelDet):
         return parameters
 
     def minimize_multinest(
-            self,
-            identifier="gbmbkgpy_fit",
-            n_live_points=400,
-            const_efficiency_mode=False
+        self, identifier="gbmbkgpy_fit", n_live_points=400, const_efficiency_mode=False
     ):
-
-        super().minimize_multinest(identifier=identifier,
-                                   n_live_points=n_live_points,
-                                   const_efficiency_mode=const_efficiency_mode)
+        super().minimize_multinest(
+            identifier=identifier,
+            n_live_points=n_live_points,
+            const_efficiency_mode=const_efficiency_mode,
+        )
 
         self.send_samples_to_submodels()
 
@@ -398,7 +368,6 @@ class ModelCombine(ModelDet):
         self.send_samples_to_submodels()
 
     def send_samples_to_submodels(self):
-
         # send subsets of samples to the indiv. models of the different
         # dets
         for model in self._model_dets:
