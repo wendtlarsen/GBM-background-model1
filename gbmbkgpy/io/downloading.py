@@ -198,7 +198,7 @@ def download_trigdata_file(trigger):
     base_url = ("https://heasarc.gsfc.nasa.gov/FTP/fermi/data/gbm/triggers/"
                 f"{year}/{trigger}/current/glg_trigdat_all_{trigger}_v0")
 
-    final_path = (file_dir / f"glg_trigdat_all_{trigger}_v00.fits")
+    final_path = (file_dir / f"glg_trigdat_all_{trigger}_v00.fit")
 
     if rank == 0:
         file_dir.mkdir(parents=True, exist_ok=True)
@@ -207,14 +207,14 @@ def download_trigdata_file(trigger):
             path_to_file = None
             for version in ["0", "1", "2", "3", "4"]:
                 try:
-                    path_to_file = download_file(f"{base_url}{version}.fits")
+                    path_to_file = download_file(f"{base_url}{version}.fit")
                 except HTTPError:
                     pass
                 if path_to_file is not None:
                     break
 
             if path_to_file is None:
-                print(f"No version found for the url {base_url}?.fits")
+                print(f"No version found for the url {base_url}?.fit")
 
             shutil.move(path_to_file, final_path)
 
