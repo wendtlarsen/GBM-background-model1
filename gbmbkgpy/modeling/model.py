@@ -348,12 +348,17 @@ class ModelCombine(ModelDet):
         return parameters
 
     def minimize_multinest(
-        self, identifier="gbmbkgpy_fit", n_live_points=400, const_efficiency_mode=False
+        self,
+        identifier="gbmbkgpy_fit",
+        n_live_points=400,
+        const_efficiency_mode=False,
+        verbose=True,
     ):
         super().minimize_multinest(
             identifier=identifier,
             n_live_points=n_live_points,
             const_efficiency_mode=const_efficiency_mode,
+            verbose=verbose,
         )
 
         self.send_samples_to_submodels()
