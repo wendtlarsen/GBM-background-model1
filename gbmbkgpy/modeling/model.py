@@ -177,6 +177,7 @@ class ModelDet:
         self._log_probability_values = log_like_values + np.array(
             [self.log_prior(samples) for samples in self._raw_samples]
         )
+        return self._output_dir
 
     def load_fit(self, output_dir):
         """
@@ -354,7 +355,7 @@ class ModelCombine(ModelDet):
         const_efficiency_mode=False,
         verbose=True,
     ):
-        super().minimize_multinest(
+        self._output_dir = super().minimize_multinest(
             identifier=identifier,
             n_live_points=n_live_points,
             const_efficiency_mode=const_efficiency_mode,
@@ -402,3 +403,7 @@ class ModelCombine(ModelDet):
     @property
     def sources(self):
         return [d.sources for d in self.model_dets]
+
+    @property
+    def output_dir(self):
+        return self._output_dir
