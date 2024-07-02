@@ -129,6 +129,7 @@ plt.plot(drm_gen.Ebins_in_edge[1:], rsp_pre.response_grid[5000, :,0])
 plt.xscale("log")
 plt.xlabel("Energy [keV]")
 plt.ylabel("Effective Area [cm2]");
+plt.show()
 ```
 
 Pre-calculate the effective responses for extended sources
