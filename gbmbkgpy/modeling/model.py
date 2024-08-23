@@ -275,13 +275,14 @@ class ModelDet:
         for v, param in zip(values, self.parameter.values()):
             param.value = v
 
-    def set_parameter_key(self, value, key):
+    def set_parameter_key(self, key, value):
         """
         Set parameter value by giving key and value
-        :param value: parameter value
-        :type value: float
+
         :param key: parameter key
         :type key: str
+        :param value: parameter value
+        :type value: float
         """
         assert key in self.parameter.keys(), "Key must be a valid parameter name"
         self.parameter[key].value = value
@@ -374,6 +375,7 @@ class ModelCombine(ModelDet):
         )
 
         self.send_samples_to_submodels()
+        self.send_parameters_to_submodels()
 
     def load_fit(self, output_dir):
         """
