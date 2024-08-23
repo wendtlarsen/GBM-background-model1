@@ -275,6 +275,17 @@ class ModelDet:
         for v, param in zip(values, self.parameter.values()):
             param.value = v
 
+    def set_parameter_key(self, value, key):
+        """
+        Set parameter value by giving key and value
+        :param value: parameter value
+        :type value: float
+        :param key: parameter key
+        :type key: str
+        """
+        assert key in self.parameter.keys(), "Key must be a valid parameter name"
+        self.parameter[key].value = value
+
     def update_current_parameters(self):
         # update the dict with the parameters from all sources saved
         parameters = collections.OrderedDict()
@@ -372,6 +383,7 @@ class ModelCombine(ModelDet):
         super().load_fit(output_dir)
 
         self.send_samples_to_submodels()
+        self.send_parameters_to_submodels()
 
     def send_samples_to_submodels(self):
         # send subsets of samples to the indiv. models of the different
@@ -391,6 +403,15 @@ class ModelCombine(ModelDet):
             model.set_raw_samples(raw_samples)
 
             model.set_log_probability_values(self._log_probability_values)
+
+    def send_parameters_to_submodels(self):
+        """
+        Sends the new parameter values to the submodels
+        """
+        for p, v in self.parameter.items():
+            for mod in self._model_dets:
+                if p in mod.parameter.keys():
+                    mod.set_parameter_key(p, v.value)
 
     @property
     def model_dets(self):
