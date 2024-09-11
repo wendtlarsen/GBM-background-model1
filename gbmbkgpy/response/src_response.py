@@ -250,3 +250,35 @@ class GalacticCenterResponse(ExtendedSourceResponse):
         return (c *
                 (gamma_l**2 / ((l - l_0)**2 + gamma_l**2)) *
                 (gamma_b**2 / ((b - b_0)**2 + gamma_b**2)))
+
+class GCAnnihilationResponse(GalacticCenterResponse):
+    def __init__(self, geometry, interp_times, resp_prec):
+        super().__init__(geometry,
+                         interp_times,
+                         resp_prec)
+    def _lorentzian(self, l, b):
+        #modify the method given in GalacticCenterResponse
+        #to the parameters in
+        #The all-sky distribution of 511 keV electron-positron annihilation
+        #by Knödseler et al
+        #FWHM is ~8 deg
+        l = np.deg2rad(l)
+        b = np.deg2rad(b)
+        #
+        FWHM_l = np.deg2rad(8.)
+        l_0 = 0
+        gamma_l = FWHM_l / 2
+
+
+        FWHM_b = np.deg2rad(8.)
+        # b_0 is -0.15 degrees
+        b_0 = np.deg2rad(-0.15)
+        gamma_b = FWHM_b / 2
+
+        # Normalization so that the integral of the resulting
+        # function over the unit sphere equals 1
+        c = 1 / 0.0446463
+
+        return (c *
+                (gamma_l**2 / ((l - l_0)**2 + gamma_l**2)) *
+                (gamma_b**2 / ((b - b_0)**2 + gamma_b**2)))
